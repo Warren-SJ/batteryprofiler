@@ -1,0 +1,2 @@
+Battery[[:space:]]Profiler.SLDASM filter=lfs diff=lfs merge=lfs -text
+PCB1.step filter=lfs diff=lfs merge=lfs -text
