@@ -7,7 +7,7 @@ from matplotlib.figure import Figure
 import numpy as np
 
 OUTPUT_PATH = Path(__file__).parent
-ASSETS_PATH = OUTPUT_PATH / Path(r"D:\UoM\Semester 4\EN2160 -  Electronic Design Realization\Battery Profiler\UI\build\assets")
+ASSETS_PATH = OUTPUT_PATH / Path("assets")
 
 def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
