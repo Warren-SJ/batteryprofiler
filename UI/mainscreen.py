@@ -1,10 +1,10 @@
-
 from pathlib import Path
 import tkinter as tk
 from tkinter import Tk, Canvas, Button, PhotoImage, Frame, Label
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import numpy as np
+import spidev
 
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path("assets")
