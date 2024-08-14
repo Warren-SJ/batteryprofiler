@@ -5,15 +5,15 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import numpy as np
 from tkinter import Toplevel
+import struct
+import spidev
 
-# import spidev
+spi = spidev.SpiDev()
+spi.open(0, 0)  # Open bus 0, device (CS) 0
 
-# spi = spidev.SpiDev()
-# spi.open(0, 0)  # Open bus 0, device (CS) 0
-
-# # Set SPI parameters
-# spi.max_speed_hz = 500000  # Set speed to 500 kHz (adjust as needed)
-# spi.mode = 0b00  # SPI mode (depends on your STM32 setup)
+# Set SPI parameters
+spi.max_speed_hz = 500000  # Set speed to 500 kHz (adjust as needed)
+spi.mode = 0b00  # SPI mode (depends on your STM32 setup)
 
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path("assets")
@@ -141,10 +141,12 @@ def set_screen():
 def get_reading():
     # This function should return the new reading value
 
-    a = 1.3
-    c = 3.7
-    b = 0.1  # Adjust this value to change the rate of decay
-    return a * np.exp(-b * len(samples)) + c
+    received_data = spi.xfer2([0x00, 0x00, 0x00, 0x00])
+    
+    # Step 2: Convert the received bytes to a floating point number
+    float_number = struct.unpack('f', bytearray(received_data))[0]
+    
+    return float_number
 
 def back():
     global backpressed
@@ -203,7 +205,7 @@ def constant_voltage(current_level:int):
         plot.set_ylim(0, 7)   # Adjust as necessary based on expected reading values
         plot.grid()
         canvas.draw()
-        window.after(1000, update_plot)
+        window.after(15000, update_plot)
 
     update_plot()
 
