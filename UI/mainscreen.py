@@ -61,7 +61,7 @@ def set_screen():
             return
         if int(data) > 30:
             data = 30
-        # spi.xfer([int(data)])
+        spi.xfer([int(data)])
         entry.destroy()
         number0.destroy()
         number1.destroy()
