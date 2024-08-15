@@ -13,7 +13,9 @@ import spidev
 # # 0: Ask if value is available
 # # STM32 replies with 0 if value is not available, n, qith number of values if has
 # # 1 Ask for values
+# # 2 Stop discharging
 # # STM32 replies with required data. May be multiple bytes
+# # For connection check: https://learn.sparkfun.com/tutorials/raspberry-pi-spi-and-i2c-tutorial/all
 
 spi = spidev.SpiDev()
 spi.open(0, 0)  # Open bus 0, device (CS) 0
@@ -68,7 +70,7 @@ def set_screen():
             return
         if int(data) > 30:
             data = 30
-        # spi.xfer([int(data)])
+        spi.xfer([int(data)])
         entry.destroy()
         number0.destroy()
         number1.destroy()
@@ -164,6 +166,7 @@ def back():
     global backpressed
     Canvas
     backpressed = True
+    spi.xfer([0x02])
 
 def constant_voltage(current_level:int):
     global backpressed, samples, readings, backbutton, canvas, label_3, label_4
