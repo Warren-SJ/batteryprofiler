@@ -8,6 +8,13 @@ from tkinter import Toplevel
 import struct
 import spidev
 
+# # State machine for SPI:
+# # Send a current value
+# # 0: Ask if value is available
+# # STM32 replies with 0 if value is not available, n, qith number of values if has
+# # 1 Ask for values
+# # STM32 replies with required data. May be multiple bytes
+
 spi = spidev.SpiDev()
 spi.open(0, 0)  # Open bus 0, device (CS) 0
 
@@ -61,7 +68,7 @@ def set_screen():
             return
         if int(data) > 30:
             data = 30
-        spi.xfer([int(data)])
+        # spi.xfer([int(data)])
         entry.destroy()
         number0.destroy()
         number1.destroy()
@@ -128,11 +135,11 @@ def set_screen():
     number0 = Button(image=number_0_image, borderwidth=0, highlightthickness=0, command=lambda: insert_number(0), relief="flat")
     number0.image = number_0_image
     number0.place(x = 450, y = 500)
-    clear_image = PhotoImage(file=relative_to_assets("clear (custom).png"))
+    clear_image = PhotoImage(file=relative_to_assets("clear (Custom).png"))
     clear = Button(image=clear_image, borderwidth=0, highlightthickness=0, command=clear_entry, relief="flat")
     clear.image = clear_image
     clear.place(x = 350, y = 500)
-    enter_image = PhotoImage(file=relative_to_assets("enter (custom).png"))
+    enter_image = PhotoImage(file=relative_to_assets("enter (Custom).png"))
     enter = Button(image=enter_image, borderwidth=0, highlightthickness=0, command=lambda: on_enter(entry), relief="flat")
     enter.image = enter_image
     enter.place(x = 550, y = 500)
@@ -140,13 +147,18 @@ def set_screen():
 
 def get_reading():
     # This function should return the new reading value
+    reading_array = []
+    data_to_receive = spi.xfer([0])
+    for i in range(int(data_to_receive[0])):
+        received_data = spi.xfer([0x00, 0x00, 0x00 & 0x0F])
+        combined_value = (received_data[0] << 12) | (received_data[1] << 4) | (received_data[2] & 0x0F)
 
-    received_data = spi.xfer2([0x00, 0x00, 0x00, 0x00])
-    
+# Convert to decimal integer
+        decimal_value = int(combined_value) * 5 / 1048575 # 5V reference, 20-bit ADC
+        reading_array.append(decimal_value)
+    avg_reading = np.mean(reading_array)
     # Step 2: Convert the received bytes to a floating point number
-    float_number = struct.unpack('f', bytearray(received_data))[0]
-    
-    return float_number
+    return avg_reading
 
 def back():
     global backpressed
@@ -205,7 +217,7 @@ def constant_voltage(current_level:int):
         plot.set_ylim(0, 7)   # Adjust as necessary based on expected reading values
         plot.grid()
         canvas.draw()
-        window.after(15000, update_plot)
+        window.after(1000, update_plot)
 
     update_plot()
 
@@ -238,10 +250,16 @@ def reset_main_screen():
     start_button.image = start_button_image
     start_button.place(x=380, y=300.0, width=250, height=110)
 
+    window.bind('<Escape>', close_window)
+
+
+def close_window(event):
+    window.destroy()
+
 main_frame = Frame(window, bg="#000000", height=541, width=965, bd=0, highlightthickness=0, relief="ridge")
 label_1 = Label(main_frame, text="Welcome", bg="#000000", fg="#ffffff", font=("Gruppo", 45))
 label_1.place(x=380, y=10)
-
+window.bind('<Escape>', close_window)
 # button_image_1 = PhotoImage(file=relative_to_assets("constantvoltage.png"))
 # button_1 = Button(image=button_image_1, borderwidth=0, highlightthickness=0, command=set_screen, relief="flat")
 # button_1.image = button_image_1
